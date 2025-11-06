@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,36 +31,25 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/product/{productId}/image")
-    public ResponseEntity<byte[]> getProductImage(@PathVariable int productId) {
-        Product product = productService.getProductById(productId);
-        if (product.getId() > 0) {
-            return new ResponseEntity<>(product.getImageData(), HttpStatus.OK);
-        } else {
+
+    @PostMapping("/product")
+    public ResponseEntity<Product> addProduct(@RequestBody Product product) throws IOException {
+        Product savedProduct = productService.addOrUpdateProduct(product);
+        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/product/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody Product product) throws IOException {
+        Product existing = productService.getProductById(id);
+        if (existing.getId() <= 0) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        product.setId(id);
+        Product updated = productService.addOrUpdateProduct(product);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
-    @PostMapping("/product")
-    public ResponseEntity<?> addProduct(@RequestPart Product product, @RequestPart MultipartFile imageFile) {
-        Product savedProduct = null;
-        try {
-            savedProduct = productService.addOrUpdateProduct(product, imageFile);
-            return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
 
-    }
-    @PutMapping("/product/{id}")
-    public ResponseEntity<String> updateProduct(@PathVariable int id, @RequestPart Product product, @RequestPart MultipartFile imageFile) {
-        Product updatedProduct = null;
-        try {
-            updatedProduct = productService.addOrUpdateProduct(product, imageFile);
-            return new ResponseEntity<>("Updated", HttpStatus.OK);
-        } catch (IOException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
     @PutMapping("/product/{id}/reduceStock")
     public ResponseEntity<String> reduceStock(@PathVariable int id, @RequestParam int quantity) {
         Product product = productService.getProductById(id);
