@@ -14,4 +14,9 @@ public class PaymentResponse {
     private Double amount;
     private String status;
     private String message;
+    public PaymentResponse(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 }
+

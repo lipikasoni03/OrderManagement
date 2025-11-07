@@ -7,6 +7,7 @@ import com.orderManagement.order_service.model.OrderItem;
 import com.orderManagement.order_service.model.Product;
 import com.orderManagement.order_service.model.dto.*;
 import com.orderManagement.order_service.repo.OrderRepo;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,22 @@ public class OrderService {
 
     @Autowired
     private OrderRepo orderRepo;
+    @CircuitBreaker(name = "productService", fallbackMethod = "productFallback")
+    public Product getProduct(Long id) {
+        return productClient.getProductById(id);
+    }
 
+    public Product productFallback(int id, Throwable ex) {
+        return new Product(id); }
+
+    @CircuitBreaker(name = "paymentService", fallbackMethod = "paymentFallback")
+    public PaymentResponse makePayment(PaymentRequest paymentRequest) {
+        return paymentClient.makePayment(paymentRequest);
+    }
+
+    public PaymentResponse paymentFallback(PaymentRequest request, Throwable ex) {
+        return new PaymentResponse("FAILED", "Payment service unavailable");
+    }
     @Transactional
     public OrderResponse placeOrder(OrderRequest request) {
 
