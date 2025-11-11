@@ -2,6 +2,7 @@
 package com.example.payment.service;
 
 import com.example.payment.Entity.Paymentvalue;
+//import com.example.payment.config.DiscountConfig;
 import com.example.payment.model.PaymentDto;
 import com.example.payment.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ public class PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+//    @Autowired
+//    private DiscountConfig discountConfig;
     private boolean isPaid;
     public boolean isPaid() {
         return isPaid;
@@ -29,6 +32,10 @@ public class PaymentService {
         payment.setOrderId(dto.getOrderId());
         payment.setPaymentMode(dto.getPaymentMode());
         payment.setAmount(dto.getAmount());
+//        // Apply discount from Config Server
+//
+//        double discount = discountConfig.getDiscountAmount();
+//        double discountedAmount = dto.getAmount() - (dto.getAmount() * discount);
 
         // Handle invalid or empty amount
         if (dto.getAmount() == null || dto.getAmount() <= 0) {
