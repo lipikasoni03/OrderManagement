@@ -2,6 +2,7 @@ package com.orderManagement.order_service.services;
 
 import com.orderManagement.order_service.client.ProductClient;
 import com.orderManagement.order_service.client.PaymentClient;
+import com.orderManagement.order_service.config.DiscountConfig;
 import com.orderManagement.order_service.model.Order;
 import com.orderManagement.order_service.model.OrderItem;
 import com.orderManagement.order_service.model.Product;
@@ -20,6 +21,8 @@ import java.util.UUID;
 
 @Service
 public class OrderService {
+    @Autowired
+    private DiscountConfig discountConfig;
 
     @Autowired
     private ProductClient productClient;
@@ -87,7 +90,14 @@ public class OrderService {
         }
 
         order.setOrderItems(orderItems);
+        // APPLY DISCOUNT IF ENABLED
+        if (discountConfig.isEnabled()) {
+            BigDecimal discountValue = totalAmount.multiply(BigDecimal.valueOf(discountConfig.getAmount()));
+            totalAmount = totalAmount.subtract(discountValue);
+        }
+
         order.setTotalAmount(totalAmount);
+
 
         //Save order first
         Order savedOrder = orderRepo.save(order);
